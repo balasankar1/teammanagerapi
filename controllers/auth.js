@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const client = require("../configs/db");
 
-exports.signin = async (req, res) => {
+const signin = async (req, res) => {
   try {
     const { email, password } = req.body;
     const userData = await client.query(
@@ -34,3 +34,5 @@ exports.signin = async (req, res) => {
     console.log(error);
   }
 };
+
+module.exports = { signin };

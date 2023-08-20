@@ -17,20 +17,41 @@ exports.getMember = async (req, res) => {
     console.log(err);
   }
 };
+exports.getAll = async (req, res) => {
+  try {
+    console.log(req.email);
+    const data = await client.query(
+      `SELECT * FROM members WHERE email='${req.email}';`
+    );
 
-exports.getAll = (req, res) => {};
+    const memberData = data.rows;
+    const filteredData = memberData.map((member) => ({
+      name: member.name,
+      role: member.role,
+      email: member.memberemail,
+      address: member.address,
+      phoneNumber: member.phonenumber,
+    }));
+
+    res.status(200).json({
+      message: "Member data received successfully",
+      data: filteredData,
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 exports.addMember = async (req, res) => {
   try {
+    console.log(req.email);
     const { name, role, memberemail, address, phonenumber } = req.body;
     const result = await client.query(`
-      INSERT INTO members (name, role, memberemail, address, phonenumber)
-      VALUES ('${name}', '${role}', '${memberemail}', '${address}', '${phonenumber}');`);
+      INSERT INTO members (name, role, memberemail, address, phonenumber,email)
+      VALUES ('${name}', '${role}', '${memberemail}', '${address}', '${phonenumber}','${req.email}');`);
 
-    const addedMember = result.rows[0];
     res.status(201).json({
       message: "Member added successfully",
-      member: addedMember,
     });
   } catch (err) {
     console.log(err);
@@ -40,5 +61,42 @@ exports.addMember = async (req, res) => {
   }
 };
 
-exports.updateMember = (req, res) => {};
-exports.deleteMember = (req, res) => {};
+exports.deleteMember = async (req, res) => {
+  const memberId = req.params.id;
+
+  try {
+    await client.query(`DELETE FROM members WHERE id = ${memberId};`);
+
+    res.status(200).json({
+      message: "Member deleted successfully",
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({
+      message: "Error occurred while deleting member",
+    });
+  }
+};
+
+exports.updateMember = async (req, res) => {
+  const memberId = req.params.id;
+  const { name, role, email, address, phoneNumber } = req.body;
+
+  try {
+    const updateQuery = `
+      UPDATE members
+      SET name = '${name}', role = '${role}', memberemail = '${email}', address = '${address}', phonenumber = '${phoneNumber}'
+      WHERE id = ${memberId};
+    `;
+    await client.query(updateQuery);
+
+    res.status(200).json({
+      message: "Member updated successfully",
+    });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({
+      message: "Error occurred while updating member",
+    });
+  }
+};
