@@ -1,20 +1,16 @@
 const express = require("express");
+const router = express.Router();
 const {
   addMember,
   getAll,
-  getMember,
   updateMember,
   deleteMember,
 } = require("../controllers/member");
+const { verify } = require("../middleware/verifyToken");
 
-//const verifyToken = require("../middleware/verifyToken");
-
-const router = express.Router();
-
-router.post("/add", addMember);
-router.get("/getall", getAll);
-router.get("/get/:id", getMember);
-router.put("/update/:id", updateMember);
-router.delete("/delete/:id", deleteMember);
+router.post("/add", verify, addMember);
+router.get("/getall", verify, getAll);
+router.put("/update/:id", verify, updateMember);
+router.delete("/delete/:id", verify, deleteMember);
 
 module.exports = router;
